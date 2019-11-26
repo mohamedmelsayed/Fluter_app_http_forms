@@ -10,8 +10,9 @@ class Job{
   int id=0;
   DateTime entrydate;
   int statusid;
-  double cost=0.0;
+  String cost="0";
   int userid;
-  int customerid;
-
+  String jobdesc;
+ String customerphone;
+  String customername;
 }

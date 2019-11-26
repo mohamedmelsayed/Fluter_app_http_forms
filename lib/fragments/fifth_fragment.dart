@@ -1,10 +1,12 @@
 import 'dart:developer';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hello_world/services/contact.dart';
 import 'package:hello_world/services/httpservice.dart';
 import 'package:intl/intl.dart';
+
 class FifthFragment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,8 @@ class _MyHomePageState extends State<MyHomePage> {
   final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
   List<String> _colors = <String>['', 'red', 'green', 'blue', 'orange'];
   String _color = '';
-  Contact newContact = new Contact();
+  Job newJob = new Job();
+
   final TextEditingController _controller = new TextEditingController();
 
   Future<Null> _chooseDate(
@@ -73,7 +76,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   bool isValidPhoneNumber(String input) {
-    final RegExp regex = new RegExp(r'^\(\d\d\d\)\d\d\d\-\d\d\d\d$');
+    // final RegExp regex = new RegExp(r'^\(\d\d\d\)\d\d\d\-\d\d\d\d$');
+
+    final RegExp regex = new RegExp(r'^\d\d\d\d\d\d\d\d\d\d$');
     return regex.hasMatch(input);
   }
 
@@ -97,20 +102,32 @@ class _MyHomePageState extends State<MyHomePage> {
       form.save(); //This invokes each onSaved event
 
       print('Form save called, newContact is now up to date...');
-      print('Name: ${newContact.name}');
-      print('Dob: ${newContact.dob}');
-      print('Phone: ${newContact.phone}');
-      print('Email: ${newContact.email}');
-      print('Favorite Color: ${newContact.favoriteColor}');
+      print('Name: ${newJob.customername}');
+      print('Dob: ${newJob.entrydate}');
+      print('Phone: ${newJob.customerphone}');
+      // print('Email: ${newCustomer.email}');
+      // print('Favorite Color: ${newContact.favoriteColor}');
       print('========================================');
       print('Submitting to back end...');
       var contactService = new HttpService();
-      contactService.login({"method":"login", "table":"users",
-      "tokenlifetime":180,
-      "where": "phone,eq,1234567^pwd,eq,123"}
-        ).then((value) =>
-          showMessage('${value}!', Colors.blue));
+      log(contactService.getToken());
+      contactService.login({
+        "method": "login",
+        "table": "users",
+        "tokenlifetime": 200,
+        "where": "phone,eq,1234567^pwd,eq,123"
+      }).then((value) => printr(value));
     }
+  }
+
+  void printr(String order) {
+    HttpService contactService=new HttpService();
+    List<dynamic> object = json.decode(order);
+
+contactService.setToken(object[0]["token"]);
+
+       contactService.post("jobs",contactService.jobToJson(newJob)).then((value) => log(value));
+    showMessage(object[0]["token"], Colors.blue);
   }
 
   @override
@@ -132,29 +149,30 @@ class _MyHomePageState extends State<MyHomePage> {
                   new TextFormField(
                     decoration: const InputDecoration(
                       icon: const Icon(Icons.person),
-                      hintText: 'Enter your first and last name',
-                      labelText: 'Name',
+                      hintText: 'أدخل إسم العميل',
+                      labelText: 'إسم العميل',
                     ),
-                    // inputFormatters: [new LengthLimitingTextInputFormatter(30)],
-                    validator: (val) => val.isEmpty ? 'Name is required' : null,
-                    onSaved: (val) => newContact.name = val,
+                    inputFormatters: [new LengthLimitingTextInputFormatter(30)],
+                    validator: (val) =>
+                        val.isEmpty ? 'هذا الحقل ضروري  ' : null,
+                    onSaved: (val) => newJob.customername = val,
                   ),
                   new Row(children: <Widget>[
                     new Expanded(
                         child: new TextFormField(
                       decoration: new InputDecoration(
                         icon: const Icon(Icons.calendar_today),
-                        hintText: 'Enter your date of birth',
-                        labelText: 'Dob',
+                        hintText: 'الموعد المناسب',
+                        labelText: 'وقت العمل',
                       ),
                       controller: _controller,
                       keyboardType: TextInputType.datetime,
                       validator: (val) =>
                           isValidDob(val) ? null : 'Not a valid date',
-                      onSaved: (val) => newContact.dob = convertToDate(val),
+                      onSaved: (val) => newJob.entrydate = convertToDate(val),
                     )),
                     new IconButton(
-                      icon: new Icon(Icons.more_horiz),
+                      icon: new Icon(Icons.date_range),
                       tooltip: 'Choose date',
                       onPressed: (() {
                         _chooseDate(context, _controller.text);
@@ -164,8 +182,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   new TextFormField(
                     decoration: const InputDecoration(
                       icon: const Icon(Icons.phone),
-                      hintText: 'Enter a phone number',
-                      labelText: 'Phone',
+                      hintText: 'جوال العميل',
+                      labelText: 'الجوال',
                     ),
                     keyboardType: TextInputType.phone,
                     inputFormatters: [
@@ -174,55 +192,75 @@ class _MyHomePageState extends State<MyHomePage> {
                     ],
                     validator: (value) => isValidPhoneNumber(value)
                         ? null
-                        : 'Phone number must be entered as (###)###-####',
-                    onSaved: (val) => newContact.phone = val,
+                        : 'فقط أدخل ارقام لا تزيد عن 15 خانة',
+                    onSaved: (val) => newJob.customerphone = val,
                   ),
                   new TextFormField(
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
                     decoration: const InputDecoration(
-                      icon: const Icon(Icons.email),
-                      hintText: 'Enter a email address',
-                      labelText: 'Email',
+                      icon: const Icon(Icons.description),
+                      hintText: ' أكتب وصفا للعمل المطلوب  ',
+                      labelText: 'وصف',
                     ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) => isValidEmail(value)
-                        ? null
-                        : 'Please enter a valid email address',
-                    onSaved: (val) => newContact.email = val,
+                    // keyboardType: TextInputType.emailAddress,
+                    // validator: (value) => isValidEmail(value)
+                    //     ? null
+                    //     : 'أكتب وصف طلب التنظيف',
+                     validator: (value) =>
+                        value.isEmpty ? 'هذا الحقل ضروري  ' : null,
+                    onSaved: (value) => newJob.jobdesc = value,
                   ),
-                  new FormField<String>(
-                    builder: (FormFieldState<String> state) {
-                      return InputDecorator(
-                        decoration: InputDecoration(
-                          icon: const Icon(Icons.color_lens),
-                          labelText: 'Color',
-                          errorText: state.hasError ? state.errorText : null,
-                        ),
-                        isEmpty: _color == '',
-                        child: new DropdownButtonHideUnderline(
-                          child: new DropdownButton<String>(
-                            value: _color,
-                            isDense: true,
-                            onChanged: (String newValue) {
-                              setState(() {
-                                newContact.favoriteColor = newValue;
-                                _color = newValue;
-                                state.didChange(newValue);
-                              });
-                            },
-                            items: _colors.map((String value) {
-                              return new DropdownMenuItem<String>(
-                                value: value,
-                                child: new Text(value),
-                              );
-                            }).toList(),
-                          ),
-                        ),
-                      );
-                    },
-                    validator: (val) {
-                      return val != '' ? null : 'Please select a color';
-                    },
+                       new TextFormField(
+                    decoration: const InputDecoration(
+                      icon: const Icon(Icons.money_off),
+                      hintText: ' تكلفة الطلب',
+                      labelText: 'السعر',
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      new WhitelistingTextInputFormatter(
+                          new RegExp(r'^[()\d -]{1,15}$')),
+                    ],
+                    // validator: (value) => 
+                    //     ? null
+                    //     : 'أرقام فقط',
+                    onSaved: (val) => newJob.cost = val ,
                   ),
+                  // new FormField<String>(
+                  //   builder: (FormFieldState<String> state) {
+                  //     return InputDecorator(
+                  //       decoration: InputDecoration(
+                  //         icon: const Icon(Icons.color_lens),
+                  //         labelText: 'Color',
+                  //         errorText: state.hasError ? state.errorText : null,
+                  //       ),
+                  //       isEmpty: _color == '',
+                  //       child: new DropdownButtonHideUnderline(
+                  //         child: new DropdownButton<String>(
+                  //           value: _color,
+                  //           isDense: true,
+                  //           onChanged: (String newValue) {
+                  //             setState(() {
+                  //               newContact.favoriteColor = newValue;
+                  //               _color = newValue;
+                  //               state.didChange(newValue);
+                  //             });
+                  //           },
+                  //           items: _colors.map((String value) {
+                  //             return new DropdownMenuItem<String>(
+                  //               value: value,
+                  //               child: new Text(value),
+                  //             );
+                  //           }).toList(),
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  //   validator: (val) {
+                  //     return val != '' ? null : 'Please select a color';
+                  //   },
+                  // ),
                   new Container(
                       padding: const EdgeInsets.only(left: 40.0, top: 20.0),
                       child: new RaisedButton(
@@ -234,4 +272,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-

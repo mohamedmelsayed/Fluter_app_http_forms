@@ -11,7 +11,10 @@ class HttpService {
   static const _serviceUrl = 'http://192.168.0.191/ksa/api.php';
   static final _headers = {'Content-Type': 'application/json'};
   String token = "";
+  static final HttpService _singleton = HttpService._internal();
+  factory HttpService() => _singleton;
 
+  HttpService._internal();
   getHeaders() {
     return {'Content-Type': 'application/json', 'apitoken': this.token};
   }
@@ -24,15 +27,16 @@ class HttpService {
     return this.token;
   }
 
-  Future<String> post(var body, String table, [String where]) async {
+  Future<String> post(String table, String body, [String where]) async {
     var requestbody = {
-      "method": "put",
+      "method": "post",
       "table": table,
-      "where": where != null ? where : ""
+      "body": body,
+      // "where": where != null ? where : ""
     };
-
-    final response =
-        await http.post(_serviceUrl, headers: getHeaders(), body: requestbody);
+    log(json.encode(requestbody));
+    final response = await http.post(_serviceUrl,
+        headers: getHeaders(), body: json.encode(requestbody));
     String c = response.body;
     return c;
   }
@@ -89,7 +93,7 @@ class HttpService {
     return c;
   }
 
-  login(var data) async {
+  Future<String> login(var data) async {
     // var body = {
     //   "method": "login",
     //   "table": data.logintype,
@@ -109,5 +113,25 @@ class HttpService {
   logout() {
     return http
         .post(_serviceUrl, headers: getHeaders(), body: {"method": "logout"});
+  }
+
+  /////////////////////////////////////////////////////////////////
+  ///
+  ///
+  ///
+
+  String jobToJson(Job job) {
+    var mapData = new Map();
+    mapData["customername"] = job.customername;
+    mapData["entrydate"] = new DateFormat("y-M-d").format(job.entrydate);
+    mapData["customerphone"] = job.customerphone;
+    mapData["cost"] = job.cost;
+    mapData["jobdesc"] = job.jobdesc;
+    mapData["address"] ="";
+    mapData["status_id"] ="1";
+    mapData["users_id"] ="1";
+
+    String jsonContact = json.encode(mapData);
+    return jsonContact;
   }
 }

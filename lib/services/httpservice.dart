@@ -80,15 +80,15 @@ class HttpService {
     return c;
   }
 
-  Future<String> get(var body, String table, [String where]) async {
+  Future<String> get(String table, [String where]) async {
     var requestbody = {
       "method": "get",
       "table": table,
       "where": where == null ? where : ""
     };
 
-    final response =
-        await http.post(_serviceUrl, headers: getHeaders(), body: requestbody);
+    final response = await http.post(_serviceUrl,
+        headers: getHeaders(), body: json.encode(requestbody));
     String c = response.body;
     return c;
   }
@@ -127,11 +127,30 @@ class HttpService {
     mapData["customerphone"] = job.customerphone;
     mapData["cost"] = job.cost;
     mapData["jobdesc"] = job.jobdesc;
-    mapData["address"] ="";
-    mapData["status_id"] ="1";
-    mapData["users_id"] ="1";
+    mapData["address"] = "";
+    mapData["status_id"] = "1";
+    mapData["users_id"] = "1";
 
     String jsonContact = json.encode(mapData);
     return jsonContact;
   }
+
+  List<Job> fromJson(String jsonContact) {
+    List<Job> jobs = new List();
+    List< dynamic> maps = json.decode(jsonContact);
+    for (var map in maps) {
+      var contact = new Job();
+      contact.customername = map['customername'];
+      // contact.id = new DateFormat.yMd().parseStrict(map['dob']);
+
+      contact.id = map['id'];
+      contact.customerphone = map['customerphone'];
+      contact.cost = map['cost'];
+      contact.jobdesc = map['jobdesc'];
+      jobs.add(contact);
+    }
+
+    return jobs;
+  }
 }
+

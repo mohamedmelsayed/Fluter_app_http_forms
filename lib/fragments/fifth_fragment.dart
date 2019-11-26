@@ -121,12 +121,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void printr(String order) {
-    HttpService contactService=new HttpService();
+    HttpService contactService = new HttpService();
     List<dynamic> object = json.decode(order);
 
-contactService.setToken(object[0]["token"]);
+    contactService.setToken(object[0]["token"]);
 
-       contactService.post("jobs",contactService.jobToJson(newJob)).then((value) => log(value));
+    contactService
+        .post("jobs", contactService.jobToJson(newJob))
+        .then((value) => log(value));
     showMessage(object[0]["token"], Colors.blue);
   }
 
@@ -207,11 +209,11 @@ contactService.setToken(object[0]["token"]);
                     // validator: (value) => isValidEmail(value)
                     //     ? null
                     //     : 'أكتب وصف طلب التنظيف',
-                     validator: (value) =>
+                    validator: (value) =>
                         value.isEmpty ? 'هذا الحقل ضروري  ' : null,
                     onSaved: (value) => newJob.jobdesc = value,
                   ),
-                       new TextFormField(
+                  new TextFormField(
                     decoration: const InputDecoration(
                       icon: const Icon(Icons.money_off),
                       hintText: ' تكلفة الطلب',
@@ -222,10 +224,10 @@ contactService.setToken(object[0]["token"]);
                       new WhitelistingTextInputFormatter(
                           new RegExp(r'^[()\d -]{1,15}$')),
                     ],
-                    // validator: (value) => 
+                    // validator: (value) =>
                     //     ? null
                     //     : 'أرقام فقط',
-                    onSaved: (val) => newJob.cost = val ,
+                    onSaved: (val) => newJob.cost = val,
                   ),
                   // new FormField<String>(
                   //   builder: (FormFieldState<String> state) {

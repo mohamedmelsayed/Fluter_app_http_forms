@@ -1,11 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hello_world/pages/home_page.dart';
+import 'package:hello_world/services/httpservice.dart';
+import 'dart:convert';
+import 'dart:developer';
 
+import 'LocaleHelper.dart';
+import 'localizations.dart';
 
 void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
+  MyApp() {
+    load();
+  }
+  load() {
+    var contactService = new HttpService();
+    if (contactService.getToken() == "") {
+      log(contactService.getToken());
+      contactService.login({
+        "method": "login",
+        "table": "users",
+        "tokenlifetime": 200,
+        "where": "phone,eq,1234567^pwd,eq,123"
+      }).then((value) => printr(value));
+    }
+  }
+
+  void printr(String order) {
+    HttpService contactService = new HttpService();
+    List<dynamic> object = json.decode(order);
+
+    contactService.setToken(object[0]["token"]);
+    log(object[0]["token"]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
@@ -16,6 +46,8 @@ class MyApp extends StatelessWidget {
       home: new HomePage(),
     );
   }
+
+  void setState(Null Function() param0) {}
 }
 
 // void main() => runApp(MyApp());

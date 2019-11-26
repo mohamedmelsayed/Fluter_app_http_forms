@@ -1,3 +1,4 @@
+
 import 'package:hello_world/fragments/fifth_fragment.dart';
 import 'package:hello_world/fragments/first_fragment.dart';
 import 'package:hello_world/fragments/forth_fragment.dart';
@@ -13,11 +14,11 @@ class DrawerItem {
 
 class HomePage extends StatefulWidget {
   final drawerItems = [
-    new DrawerItem("المستخدمين", Icons.rss_feed),
-    new DrawerItem("إستلام الطلبات", Icons.local_pizza),
-    new DrawerItem("إستعراض الفرق  ", Icons.info),
-     new DrawerItem("طلبات قيد التفيذ", Icons.rss_feed),
-    new DrawerItem("جميع الطلبات ", Icons.local_pizza),
+    new DrawerItem("المستخدمين", Icons.person),
+    new DrawerItem("إستلام الطلبات", Icons.receipt),
+    new DrawerItem("إستعراض الفرق  ", Icons.people_outline),
+     new DrawerItem("طلبات قيد التفيذ", Icons.play_for_work),
+    new DrawerItem("جميع الطلبات ", Icons.all_inclusive),
   ];
 
   @override
@@ -27,6 +28,8 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
+  
+ 
   int _selectedDrawerIndex = 0;
 
   _getDrawerItemWidget(int pos) {
